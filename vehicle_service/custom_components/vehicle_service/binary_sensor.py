@@ -60,7 +60,7 @@ class ServiceDueSensor(BinarySensorEntity):
         self._vehicle_id = vehicle_id
         self._svc_id = svc_id
         self._attr_unique_id = f"{vehicle_id}_{svc_id}_due"
-        self._attr_name = f"{SERVICE_LABELS.get(svc_id, svc_id)} fällig"
+        self._attr_name = f"{SERVICE_LABELS.get(svc_id, svc_id)} Due"
         self._extra: dict[str, Any] = {}
 
     @property
@@ -77,14 +77,14 @@ class ServiceDueSensor(BinarySensorEntity):
             self._attr_is_on = False
             return
 
-        pct, km_left, months_left = _calc_pct(vehicle, self._svc_id)
+        pct, miles_left, months_left = _calc_pct(vehicle, self._svc_id)
         self._attr_is_on = pct >= 90
 
         self._extra = {
             "service_id": self._svc_id,
             "percentage": pct,
             "status": _status_from_pct(pct),
-            "km_left": km_left,
+            "miles_left": miles_left,
             "months_left": months_left,
         }
 
@@ -104,7 +104,7 @@ class AnyServiceDueSensor(BinarySensorEntity):
         self._store = store
         self._vehicle_id = vehicle_id
         self._attr_unique_id = f"{vehicle_id}_any_due"
-        self._attr_name = "Service fällig"
+        self._attr_name = "Service Due"
         self._extra: dict[str, Any] = {}
 
     @property
