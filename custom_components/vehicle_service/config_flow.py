@@ -30,40 +30,41 @@ MONTHS_DE = [
 ]
 
 # Clean service labels for UI — no brand references
+# TODO: These should ideally come from translations, but for now kept for schema compatibility
 UI_SERVICE_LABELS = {
-    "oil":          "Ölwechsel",
-    "inspection":   "Inspektion",
-    "brake_fluid":  "Bremsflüssigkeit",
-    "cabin_filter": "Innenraumfilter",
-    "air_filter":   "Luftfilter",
-    "spark_plugs":  "Zündkerzen (nur Benziner)",
-    "fuel_filter":  "Kraftstofffilter (nur Diesel)",
-    "gearbox":      "Getriebeöl",
-    "haldex":       "Haldex-Öl (nur Allrad)",
-    "ac":           "Klimawartung",
-    "hu":           "Hauptuntersuchung (HU/AU)",
+    "oil":          "Oil Change",
+    "inspection":   "Inspection",
+    "brake_fluid":  "Brake Fluid",
+    "cabin_filter": "Cabin Filter",
+    "air_filter":   "Air Filter",
+    "spark_plugs":  "Spark Plugs (petrol only)",
+    "fuel_filter":  "Fuel Filter (diesel only)",
+    "gearbox":      "Gearbox Oil",
+    "haldex":       "Haldex Oil (AWD only)",
+    "ac":           "AC Service",
+    "hu":           "Main Inspection (HU/AU / MOT)",
 }
 
-# German labels for interval fields
-INTERVAL_LABELS_DE = {
-    "oil_km":           "Ölwechsel – km-Intervall",
-    "oil_months":       "Ölwechsel – Monate",
-    "inspection_km":    "Inspektion – km-Intervall",
-    "inspection_months":"Inspektion – Monate",
-    "brake_fluid_months":"Bremsflüssigkeit – Monate",
-    "cabin_filter_km":  "Innenraumfilter – km-Intervall",
-    "cabin_filter_months":"Innenraumfilter – Monate",
-    "air_filter_km":    "Luftfilter – km-Intervall",
-    "air_filter_months":"Luftfilter – Monate",
-    "spark_plugs_km":   "Zündkerzen – km-Intervall",
-    "spark_plugs_months":"Zündkerzen – Monate",
-    "fuel_filter_km":   "Kraftstofffilter – km-Intervall",
-    "fuel_filter_months":"Kraftstofffilter – Monate",
-    "gearbox_km":       "Getriebeöl – km-Intervall",
-    "haldex_km":        "Haldex-Öl – km-Intervall",
-    "haldex_months":    "Haldex-Öl – Monate",
-    "ac_months":        "Klimawartung – Monate",
-    "hu_months":        "HU/AU – Monate",
+# English labels for interval fields
+INTERVAL_LABELS_EN = {
+    "oil_km":           "Oil Change – mileage interval (km)",
+    "oil_months":       "Oil Change – months",
+    "inspection_km":    "Inspection – mileage interval (km)",
+    "inspection_months":"Inspection – months",
+    "brake_fluid_months":"Brake Fluid – months",
+    "cabin_filter_km":  "Cabin Filter – mileage interval (km)",
+    "cabin_filter_months":"Cabin Filter – months",
+    "air_filter_km":    "Air Filter – mileage interval (km)",
+    "air_filter_months":"Air Filter – months",
+    "spark_plugs_km":   "Spark Plugs – mileage interval (km)",
+    "spark_plugs_months":"Spark Plugs – months",
+    "fuel_filter_km":   "Fuel Filter – mileage interval (km)",
+    "fuel_filter_months":"Fuel Filter – months",
+    "gearbox_km":       "Gearbox Oil – mileage interval (km)",
+    "haldex_km":        "Haldex Oil – mileage interval (km)",
+    "haldex_months":    "Haldex Oil – months",
+    "ac_months":        "AC Service – months",
+    "hu_months":        "HU/AU – months",
 }
 
 def _year_options() -> list[str]:
@@ -155,7 +156,7 @@ class VehicleServiceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             step_id="user",
             data_schema=schema,
             errors=errors,
-            description_placeholders={"step": "1/3 – Fahrzeugdaten"},
+            description_placeholders={"step": "1/3 – Vehicle Data"},
         )
 
     # ── Step 2: Service points — NO defaults, start at top ───────────────────
@@ -231,8 +232,8 @@ class VehicleServiceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors={},
             description_placeholders={
                 "disclaimer": (
-                    "Richtwerte – bitte im Serviceheft prüfen. "
-                    "0 = nicht tracken. Keine Haftung für falsche Werte."
+                    "Guideline values – please check in the service manual. "
+                    "0 = do not track. No liability for incorrect values."
                 ),
             },
         )
@@ -310,7 +311,7 @@ class VehicleServiceOptionsFlow(config_entries.OptionsFlow):
             step_id="init",
             data_schema=schema,
             errors=errors,
-            description_placeholders={"step": "Fahrzeugdaten bearbeiten"},
+            description_placeholders={"step": "Edit Vehicle Data"},
         )
 
     async def async_step_intervals(
@@ -364,6 +365,6 @@ class VehicleServiceOptionsFlow(config_entries.OptionsFlow):
             step_id="intervals",
             data_schema=vol.Schema(fields),
             description_placeholders={
-                "disclaimer": "0 = nicht tracken. Keine Haftung für falsche Werte."
+                "disclaimer": "0 = do not track. No liability for incorrect values."
             },
         )
