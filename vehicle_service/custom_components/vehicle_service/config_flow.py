@@ -14,56 +14,56 @@ from homeassistant.helpers import selector
 
 from .const import (
     DOMAIN,
-    CONF_MAKE, CONF_MODEL, CONF_EZ_DATE, CONF_KM, CONF_PLATE,
-    CONF_VIN, CONF_HSN, CONF_ENTITY_KM,
+    CONF_MAKE, CONF_MODEL, CONF_EZ_DATE, CONF_MILES, CONF_PLATE,
+    CONF_VIN, CONF_HSN, CONF_ENTITY_MILES,
     CONF_SERVICES, CONF_INTERVALS,
-    CONF_INITIAL_HU_DATE, CONF_INITIAL_HU_KM,
+    CONF_INITIAL_HU_DATE, CONF_INITIAL_HU_MILES,
     ALL_SERVICE_IDS, SERVICE_LABELS, SERVICE_INTERVAL_TYPE, DEFAULT_INTERVALS,
     SERVICE_HU,
 )
 
 _LOGGER = logging.getLogger(__name__)
 
-MONTHS_DE = [
-    "Januar","Februar","März","April","Mai","Juni",
-    "Juli","August","September","Oktober","November","Dezember"
+MONTHS_EN = [
+    "January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"
 ]
 
 # Clean service labels for UI — no brand references
 UI_SERVICE_LABELS = {
-    "oil":          "Ölwechsel",
-    "inspection":   "Inspektion",
-    "brake_fluid":  "Bremsflüssigkeit",
-    "cabin_filter": "Innenraumfilter",
-    "air_filter":   "Luftfilter",
-    "spark_plugs":  "Zündkerzen (nur Benziner)",
-    "fuel_filter":  "Kraftstofffilter (nur Diesel)",
-    "gearbox":      "Getriebeöl",
-    "haldex":       "Haldex-Öl (nur Allrad)",
-    "ac":           "Klimawartung",
-    "hu":           "Hauptuntersuchung (HU/AU)",
+    "oil":          "Oil Change",
+    "inspection":   "Inspection",
+    "brake_fluid":  "Brake Fluid",
+    "cabin_filter": "Cabin Filter",
+    "air_filter":   "Air Filter",
+    "spark_plugs":  "Spark Plugs (gasoline only)",
+    "fuel_filter":  "Fuel Filter (diesel only)",
+    "gearbox":      "Transmission Fluid",
+    "haldex":       "Haldex Oil (AWD only)",
+    "ac":           "AC Service",
+    "hu":           "Inspection (HU/AU)",
 }
 
-# German labels for interval fields
-INTERVAL_LABELS_DE = {
-    "oil_km":           "Ölwechsel – km-Intervall",
-    "oil_months":       "Ölwechsel – Monate",
-    "inspection_km":    "Inspektion – km-Intervall",
-    "inspection_months":"Inspektion – Monate",
-    "brake_fluid_months":"Bremsflüssigkeit – Monate",
-    "cabin_filter_km":  "Innenraumfilter – km-Intervall",
-    "cabin_filter_months":"Innenraumfilter – Monate",
-    "air_filter_km":    "Luftfilter – km-Intervall",
-    "air_filter_months":"Luftfilter – Monate",
-    "spark_plugs_km":   "Zündkerzen – km-Intervall",
-    "spark_plugs_months":"Zündkerzen – Monate",
-    "fuel_filter_km":   "Kraftstofffilter – km-Intervall",
-    "fuel_filter_months":"Kraftstofffilter – Monate",
-    "gearbox_km":       "Getriebeöl – km-Intervall",
-    "haldex_km":        "Haldex-Öl – km-Intervall",
-    "haldex_months":    "Haldex-Öl – Monate",
-    "ac_months":        "Klimawartung – Monate",
-    "hu_months":        "HU/AU – Monate",
+# English labels for interval fields
+INTERVAL_LABELS_EN = {
+    "oil_miles":           "Oil Change – miles interval",
+    "oil_months":          "Oil Change – months",
+    "inspection_miles":    "Inspection – miles interval",
+    "inspection_months":   "Inspection – months",
+    "brake_fluid_months":  "Brake Fluid – months",
+    "cabin_filter_miles":  "Cabin Filter – miles interval",
+    "cabin_filter_months": "Cabin Filter – months",
+    "air_filter_miles":    "Air Filter – miles interval",
+    "air_filter_months":   "Air Filter – months",
+    "spark_plugs_miles":   "Spark Plugs – miles interval",
+    "spark_plugs_months":  "Spark Plugs – months",
+    "fuel_filter_miles":   "Fuel Filter – miles interval",
+    "fuel_filter_months":  "Fuel Filter – months",
+    "gearbox_miles":       "Transmission Fluid – miles interval",
+    "haldex_miles":        "Haldex Oil – miles interval",
+    "haldex_months":       "Haldex Oil – months",
+    "ac_months":           "AC Service – months",
+    "hu_months":           "Inspection – months",
 }
 
 def _year_options() -> list[str]:
@@ -73,7 +73,7 @@ def _year_options() -> list[str]:
 def _month_options_keys() -> list[str]:
     return [str(i + 1) for i in range(12)]
 
-_KM_ENTITY_SELECTOR = selector.EntitySelector(
+_MILES_ENTITY_SELECTOR = selector.EntitySelector(
     selector.EntitySelectorConfig(domain="sensor")
 )
 
@@ -107,12 +107,12 @@ class VehicleServiceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 try:
                     hu = date(int(user_input["hu_year"]), int(user_input["hu_month"]), 1)
                     self._vehicle_data[CONF_INITIAL_HU_DATE] = hu.isoformat()
-                    self._vehicle_data[CONF_INITIAL_HU_KM] = int(user_input.get("hu_km") or 0)
+                    self._vehicle_data[CONF_INITIAL_HU_MILES] = int(user_input.get("hu_miles") or 0)
                 except ValueError:
                     errors["hu_month"] = "invalid_date"
             else:
                 self._vehicle_data[CONF_INITIAL_HU_DATE] = None
-                self._vehicle_data[CONF_INITIAL_HU_KM] = 0
+                self._vehicle_data[CONF_INITIAL_HU_MILES] = 0
 
             # VIN length validation
             vin = user_input.get(CONF_VIN, "").strip()
@@ -121,13 +121,13 @@ class VehicleServiceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
 
             if not errors:
                 self._vehicle_data.update({
-                    CONF_MAKE:      user_input[CONF_MAKE].strip(),
-                    CONF_MODEL:     user_input[CONF_MODEL].strip(),
-                    CONF_KM:        int(user_input.get(CONF_KM) or 0),
-                    CONF_PLATE:     user_input.get(CONF_PLATE, "").strip(),
-                    CONF_VIN:       vin,
-                    CONF_HSN:       user_input.get(CONF_HSN, "").strip(),
-                    CONF_ENTITY_KM: user_input.get(CONF_ENTITY_KM) or "",
+                    CONF_MAKE:         user_input[CONF_MAKE].strip(),
+                    CONF_MODEL:        user_input[CONF_MODEL].strip(),
+                    CONF_MILES:        int(user_input.get(CONF_MILES) or 0),
+                    CONF_PLATE:        user_input.get(CONF_PLATE, "").strip(),
+                    CONF_VIN:          vin,
+                    CONF_HSN:          user_input.get(CONF_HSN, "").strip(),
+                    CONF_ENTITY_MILES: user_input.get(CONF_ENTITY_MILES) or "",
                 })
                 return await self.async_step_services()
 
@@ -138,24 +138,24 @@ class VehicleServiceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             # EZ — month + year only
             vol.Required("ez_month", default="1"): vol.In(_month_options_keys()),
             vol.Required("ez_year",  default=str(today.year - 3)): vol.In(_year_options()),
-            vol.Required(CONF_KM, default=0): vol.Coerce(int),
+            vol.Required(CONF_MILES, default=0): vol.Coerce(int),
             vol.Optional(CONF_PLATE, default=""): str,
             # HU toggle
             vol.Required("hu_known", default=False): bool,
             vol.Optional("hu_month", default="1"): vol.In(_month_options_keys()),
             vol.Optional("hu_year",  default=str(today.year)): vol.In(_year_options()),
-            vol.Optional("hu_km",    default=0): vol.Coerce(int),
+            vol.Optional("hu_miles",   default=0): vol.Coerce(int),
             # Optional identification
             vol.Optional(CONF_VIN,   default=""): str,
             vol.Optional(CONF_HSN,   default=""): str,
-            vol.Optional(CONF_ENTITY_KM): _KM_ENTITY_SELECTOR,
+            vol.Optional(CONF_ENTITY_MILES): _MILES_ENTITY_SELECTOR,
         })
 
         return self.async_show_form(
             step_id="user",
             data_schema=schema,
             errors=errors,
-            description_placeholders={"step": "1/3 – Fahrzeugdaten"},
+            description_placeholders={"step": "1/3 – Vehicle Data"},
         )
 
     # ── Step 2: Service points — NO defaults, start at top ───────────────────
@@ -200,10 +200,10 @@ class VehicleServiceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 itype = SERVICE_INTERVAL_TYPE.get(sid, "both")
                 entry: dict[str, int] = {}
                 if itype != "time":
-                    v = int(user_input.get(f"{sid}_km") or 0)
+                    v = int(user_input.get(f"{sid}_miles") or 0)
                     if v > 0:
-                        entry["km"] = v
-                if itype != "km":
+                        entry["miles"] = v
+                if itype != "miles":
                     v = int(user_input.get(f"{sid}_months") or 0)
                     if v > 0:
                         entry["months"] = v
@@ -221,8 +221,8 @@ class VehicleServiceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             itype    = SERVICE_INTERVAL_TYPE.get(sid, "both")
             defaults = DEFAULT_INTERVALS.get(sid, {})
             if itype != "time":
-                fields[vol.Optional(f"{sid}_km", default=defaults.get("km", 0))] = vol.Coerce(int)
-            if itype != "km":
+                fields[vol.Optional(f"{sid}_miles", default=defaults.get("miles", 0))] = vol.Coerce(int)
+            if itype != "miles":
                 fields[vol.Optional(f"{sid}_months", default=defaults.get("months", 0))] = vol.Coerce(int)
 
         return self.async_show_form(
@@ -231,8 +231,8 @@ class VehicleServiceConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
             errors={},
             description_placeholders={
                 "disclaimer": (
-                    "Richtwerte – bitte im Serviceheft prüfen. "
-                    "0 = nicht tracken. Keine Haftung für falsche Werte."
+                    "These are guidelines – consult your service manual. "
+                    "0 = do not track. No liability for incorrect values."
                 ),
             },
         )
@@ -272,13 +272,13 @@ class VehicleServiceOptionsFlow(config_entries.OptionsFlow):
 
             if not errors:
                 self._new_data.update({
-                    CONF_MAKE:      user_input[CONF_MAKE].strip(),
-                    CONF_MODEL:     user_input[CONF_MODEL].strip(),
-                    CONF_KM:        int(user_input.get(CONF_KM) or 0),
-                    CONF_PLATE:     user_input.get(CONF_PLATE, "").strip(),
-                    CONF_VIN:       vin,
-                    CONF_HSN:       user_input.get(CONF_HSN, "").strip(),
-                    CONF_ENTITY_KM: user_input.get(CONF_ENTITY_KM) or "",
+                    CONF_MAKE:         user_input[CONF_MAKE].strip(),
+                    CONF_MODEL:        user_input[CONF_MODEL].strip(),
+                    CONF_MILES:        int(user_input.get(CONF_MILES) or 0),
+                    CONF_PLATE:        user_input.get(CONF_PLATE, "").strip(),
+                    CONF_VIN:          vin,
+                    CONF_HSN:          user_input.get(CONF_HSN, "").strip(),
+                    CONF_ENTITY_MILES: user_input.get(CONF_ENTITY_MILES) or "",
                 })
                 return await self.async_step_intervals()
 
@@ -297,20 +297,20 @@ class VehicleServiceOptionsFlow(config_entries.OptionsFlow):
             vol.Required(CONF_MODEL, default=data.get(CONF_MODEL, "")): str,
             vol.Required("ez_month", default=ez_month): vol.In(_month_options_keys()),
             vol.Required("ez_year",  default=ez_year):  vol.In(_year_options()),
-            vol.Required(CONF_KM,    default=data.get(CONF_KM, 0)): vol.Coerce(int),
+            vol.Required(CONF_MILES, default=data.get(CONF_MILES, 0)): vol.Coerce(int),
             vol.Optional(CONF_PLATE, default=data.get(CONF_PLATE, "")): str,
             vol.Optional(CONF_VIN,   default=data.get(CONF_VIN, "")): str,
             vol.Optional(CONF_HSN,   default=data.get(CONF_HSN, "")): str,
-            vol.Optional(CONF_ENTITY_KM,
-                default=data.get(CONF_ENTITY_KM) or vol.UNDEFINED,
-            ): _KM_ENTITY_SELECTOR,
+            vol.Optional(CONF_ENTITY_MILES,
+                default=data.get(CONF_ENTITY_MILES) or vol.UNDEFINED,
+            ): _MILES_ENTITY_SELECTOR,
         })
 
         return self.async_show_form(
             step_id="init",
             data_schema=schema,
             errors=errors,
-            description_placeholders={"step": "Fahrzeugdaten bearbeiten"},
+            description_placeholders={"step": "Edit Vehicle Data"},
         )
 
     async def async_step_intervals(
@@ -327,10 +327,10 @@ class VehicleServiceOptionsFlow(config_entries.OptionsFlow):
                 itype = SERVICE_INTERVAL_TYPE.get(sid, "both")
                 entry: dict[str, int] = {}
                 if itype != "time":
-                    v = int(user_input.get(f"{sid}_km") or 0)
+                    v = int(user_input.get(f"{sid}_miles") or 0)
                     if v > 0:
-                        entry["km"] = v
-                if itype != "km":
+                        entry["miles"] = v
+                if itype != "miles":
                     v = int(user_input.get(f"{sid}_months") or 0)
                     if v > 0:
                         entry["months"] = v
@@ -354,9 +354,9 @@ class VehicleServiceOptionsFlow(config_entries.OptionsFlow):
             cur      = cur_intv.get(sid, {})
             defaults = DEFAULT_INTERVALS.get(sid, {})
             if itype != "time":
-                fields[vol.Optional(f"{sid}_km",
-                    default=cur.get("km", defaults.get("km", 0)))] = vol.Coerce(int)
-            if itype != "km":
+                fields[vol.Optional(f"{sid}_miles",
+                    default=cur.get("miles", defaults.get("miles", 0)))] = vol.Coerce(int)
+            if itype != "miles":
                 fields[vol.Optional(f"{sid}_months",
                     default=cur.get("months", defaults.get("months", 0)))] = vol.Coerce(int)
 
@@ -364,6 +364,6 @@ class VehicleServiceOptionsFlow(config_entries.OptionsFlow):
             step_id="intervals",
             data_schema=vol.Schema(fields),
             description_placeholders={
-                "disclaimer": "0 = nicht tracken. Keine Haftung für falsche Werte."
+                "disclaimer": "0 = do not track. No liability for incorrect values."
             },
         )
