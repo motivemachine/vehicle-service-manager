@@ -1,52 +1,52 @@
-# Vehicle Service Manager für Home Assistant
+# Vehicle Service Manager for Home Assistant
 
-Trackt Service-Intervalle, Reparaturen und Reifenverschleiß für deine Fahrzeuge – als native HA-Integration mit echten Entities und einer eigenen Lovelace-Karte.
+Tracks service intervals, repairs, and tire wear for your vehicles – as a native HA integration with real entities and a custom Lovelace card.
 
 ---
 
 ## Features
 
-- **Service Status** mit Fortschrittsbalken und Ampel-System (OK / Im Blick / Bald fällig / Fällig / Überfällig)
-- **Erstzulassungsdatum** als Ausgangspunkt für Zeit-Intervalle, solange kein Serviceeintrag vorhanden
-- **HU/AU** direkt beim Anlegen des Fahrzeugs erfragen, automatischer Serviceeintrag
-- **Live KM-Stand** via beliebiger HA-Entität (OBD-Dongle, Fahrzeugintegration)
-- **11 Service-Punkte**: Ölwechsel, Inspektion, Bremsflüssigkeit, Innenraumfilter, Luftfilter, Zündkerzen, Kraftstofffilter, Getriebeöl, Haldex-Öl, Klimawartung, HU/AU
-- **Reparaturen & Verschleiß**: Bremsen, Stoßdämpfer, Zahnriemen, Batterie, Kupplung u.a.
-- **Reifentracking**: 4 Radpositionen, Profiltiefe, DOT-Alter, Verschleißprojektion (1,5 mm / 10.000 km)
-- **Herstellerlogos** automatisch erkannt (30+ Marken)
-- **Mehrere Fahrzeuge** parallel
-- **Binary Sensors** für Automationen (Service fällig)
-- **HA Services** zum Hinzufügen von Einträgen aus Automationen
+- **Service Status** with progress bars and traffic light system (OK / Watch / Soon / Due / Overdue)
+- **Registration Date** as the starting point for time intervals until a service entry is recorded
+- **Inspection** requested directly when adding the vehicle, automatic service entry
+- **Live Mileage** via any HA entity (OBD adapter, vehicle integration)
+- **11 Service Points**: Oil Change, Inspection, Brake Fluid, Cabin Filter, Air Filter, Spark Plugs, Fuel Filter, Transmission Fluid, Haldex Oil, AC Service, Inspection (HU/AU)
+- **Repairs & Wear**: Brakes, shocks, timing belt, battery, clutch, and more
+- **Tire Tracking**: 4 wheel positions, tread depth, DOT age, wear projection (1/32" per 10,000 miles)
+- **Manufacturer Logos** automatically recognized (30+ brands)
+- **Multiple Vehicles** in parallel
+- **Binary Sensors** for automations (service due)
+- **HA Services** to add entries from automations
 
 ---
 
 ## Installation via HACS
 
-### 1. Repository hinzufügen
+### 1. Add Repository
 
-1. HACS öffnen → **Integrationen** → drei Punkte → **Benutzerdefinierte Repositories**
+1. Open HACS → **Integrations** → three dots → **Custom repositories**
 2. URL: `https://github.com/toxictody1337/vehicle-service-manager`  
-   Kategorie: **Integration**
-3. **Hinzufügen** → anschließend im HACS-Store suchen und installieren
-4. Home Assistant neu starten
+   Category: **Integration**
+3. **Add** → then search and install in HACS Store
+4. Restart Home Assistant
 
-### 2. Integration einrichten
+### 2. Set Up Integration
 
-**Einstellungen → Integrationen → + Hinzufügen → "Vehicle Service Manager"**
+**Settings → Integrations → + Add → "Vehicle Service Manager"**
 
-Der Einrichtungsassistent führt durch 3 Schritte:
-1. **Fahrzeugdaten**: Hersteller, Modell, Erstzulassung, KM-Stand, letzte HU/AU, optionale Entität für Live-KM
-2. **Service-Punkte**: Auswahl der zu überwachenden Punkte
-3. **Intervalle**: Anpassung der km- und Zeit-Intervalle
+The setup wizard guides you through 3 steps:
+1. **Vehicle Data**: Manufacturer, Model, Registration Date, Current Mileage, Last Inspection, optional entity for live mileage
+2. **Service Points**: Select the points you want to monitor
+3. **Intervals**: Adjust the mileage and time intervals
 
-> ⚠️ Die voreingestellten Intervalle sind Richtwerte. Bitte im Serviceheft oder der Bedienungsanleitung prüfen und anpassen. Bei Unsicherheit Werkstatt befragen. Keine Haftung für Schäden durch falsche Werte.
+> ⚠️ The default intervals are guidelines. Please check and adjust them in your service manual or owner's handbook. If unsure, consult your service center. No liability for damages.
 
-### 3. Lovelace-Karte hinzufügen
+### 3. Add Lovelace Card
 
-Die JavaScript-Datei wird automatisch als Lovelace-Ressource registriert.  
-Dashboard → **Karte hinzufügen** → **Benutzerdefinierte Karten** → **Vehicle Service Card**
+The JavaScript file is automatically registered as a Lovelace resource.  
+Dashboard → **Add Card** → **Custom Cards** → **Vehicle Service Card**
 
-Oder manuell in der Lovelace-YAML:
+Or manually in Lovelace YAML:
 ```yaml
 type: custom:vehicle-service-card
 ```
@@ -55,22 +55,22 @@ type: custom:vehicle-service-card
 
 ## Entities
 
-Pro Fahrzeug werden folgende Entities erstellt:
+The following entities are created per vehicle:
 
-| Typ | Beispiel | Beschreibung |
-|-----|----------|--------------|
-| `sensor` | `sensor.golf_gti_oelwechsel` | Status: ok / watch / soon / due / overdue |
-| `sensor` | `sensor.golf_gti_kilometerstand` | Aktueller KM-Stand |
-| `sensor` | `sensor.golf_gti_reifen_vl` | Profiltiefe VL in mm (projiziert) |
-| `binary_sensor` | `sensor.golf_gti_oelwechsel_faellig` | True wenn ≥ 90% |
-| `binary_sensor` | `sensor.golf_gti_service_faellig` | True wenn irgendetwas ≥ 90% |
+| Type | Example | Description |
+|------|----------|-------------|
+| `sensor` | `sensor.golf_gti_oil_change` | Status: ok / watch / soon / due / overdue |
+| `sensor` | `sensor.golf_gti_odometer` | Current mileage reading |
+| `sensor` | `sensor.golf_gti_tire_fl` | Tread depth FL in 32nds (projected) |
+| `binary_sensor` | `sensor.golf_gti_oil_change_due` | True if ≥ 90% |
+| `binary_sensor` | `sensor.golf_gti_service_due` | True if anything ≥ 90% |
 
-### Entity-Attribute
+### Entity Attributes
 
-Jede `sensor`-Entity hat u.a. folgende Attribute:
+Each `sensor` entity has the following attributes, among others:
 ```
 vehicle_id, service_id, percentage, status, last_service_date,
-last_service_km, km_left, months_left, interval_km, interval_months
+last_service_miles, miles_left, months_left, interval_miles, interval_months
 ```
 
 ---
@@ -83,19 +83,19 @@ service: vehicle_service.add_service_entry
 data:
   vehicle_id: "abc-123-uuid"
   entry_date: "2024-03-15"
-  km: 79500
+  miles: 79500
   services:
     - oil
     - inspection
-  notes: "Freie Werkstatt Musterstadt"
+  notes: "Main Dealer, Springfield"
 ```
 
-### `vehicle_service.update_km`
+### `vehicle_service.update_miles`
 ```yaml
-service: vehicle_service.update_km
+service: vehicle_service.update_miles
 data:
   vehicle_id: "abc-123-uuid"
-  km: 80000
+  miles: 80000
 ```
 
 ### `vehicle_service.add_repair`
@@ -104,9 +104,9 @@ service: vehicle_service.add_repair
 data:
   vehicle_id: "abc-123-uuid"
   entry_date: "2024-03-15"
-  km: 79500
+  miles: 79500
   category: brakes_front
-  description: "Textar Bremsbeläge"
+  description: "Textar brake pads"
   cost: 180
 ```
 
@@ -116,7 +116,7 @@ service: vehicle_service.add_tire
 data:
   vehicle_id: "abc-123-uuid"
   entry_date: "2024-04-01"
-  km: 80000
+  miles: 80000
   type: summer
   axle: all
   width: 205
@@ -132,102 +132,99 @@ data:
 
 ---
 
-## Automationen – Beispiele
+## Automation Examples
 
-### Benachrichtigung bei fälligem Service
+### Notification When Service is Due
 ```yaml
 automation:
-  - alias: "Service fällig – Benachrichtigung"
+  - alias: "Service Due – Notification"
     trigger:
       - platform: state
-        entity_id: binary_sensor.golf_gti_service_faellig
+        entity_id: binary_sensor.golf_gti_service_due
         to: "on"
     action:
       - service: notify.mobile_app
         data:
-          title: "🔧 Service fällig"
+          title: "🔧 Service Due"
           message: >
-            {{ states('sensor.golf_gti_service_faellig') }} –
-            Bitte Service-Termin vereinbaren.
+            {{ states('sensor.golf_gti_service_due') }} –
+            Please schedule service appointment.
 ```
 
-### Automatische KM-Übernahme aus OBD-Integration
+### Automatic Mileage Update from OBD Integration
 ```yaml
-# Alternativ zur Konfiguration in der Integration:
+# Alternatively to configuring in the integration:
 automation:
-  - alias: "KM-Stand automatisch übernehmen"
+  - alias: "Automatically Update Mileage"
     trigger:
       - platform: state
         entity_id: sensor.obd_odometer
     action:
-      - service: vehicle_service.update_km
+      - service: vehicle_service.update_miles
         data:
           vehicle_id: "abc-123-uuid"
-          km: "{{ states('sensor.obd_odometer') | int }}"
+          miles: "{{ states('sensor.obd_odometer') | int }}"
 ```
 
 ---
 
-## Reifenverschleiß-Berechnung
+## Tire Wear Calculation
 
-Die projizierte Profiltiefe wird berechnet als:
+The projected tread depth is calculated as:
 
 ```
-aktuelle_tiefe = ursprüngliche_tiefe − (gefahrene_km × 1,5 / 10.000)
+current_depth = original_depth − (miles_driven × 0.189 / 10,000)
 ```
 
-Empfohlene Verschleißgrenzen:
-- **Sommerreifen**: 3,0 mm
-- **Winterreifen / Ganzjahresreifen**: 4,0 mm
-- **Gesetzliches Minimum**: 1,6 mm
+Recommended wear limits:
+- **Summer Tires**: 3/32" (3.8 32nds)
+- **Winter / All-Season Tires**: 4/32" (5.1 32nds)
+- **Legal Minimum**: 2/32" (1.6 mm equivalent)
 
 ---
 
-## Hinweise & Haftungsausschluss
+## Notes & Disclaimer
 
-> Die voreingestellten Intervalle und Berechnungen (Reifenverschleiß, Service-Fälligkeiten) sind Richtwerte ohne Gewähr. Der tatsächliche Wartungsbedarf hängt von Fahrzeugmodell, Fahrweise und Umgebungsbedingungen ab. Prüfe alle Angaben anhand des Servicehefts und der Fahrzeugdokumentation. Keine Haftung für Schäden durch fehlerhafte Werte oder fehlerhafte Interpretation der angezeigten Daten.
-
----
-
+> The default intervals and calculations (tire wear, service due dates) are guidelines without warranty. Actual maintenance needs depend on vehicle model, driving habits, and conditions. Always consult your owner's manual or service schedule. This software is provided without warranty. No liability for damages resulting from incorrect values or data interpretation.
 
 ---
 
-## Entwicklung & Attribution
+## Development & Attribution
 
-Diese Integration wurde mit Unterstützung von **Claude (Anthropic AI)** entwickelt.
+This integration was developed with the support of **Claude (Anthropic AI)**.
 
-### Verwendete Drittanbieter-Dienste
+### Third-Party Services Used
 
-| Dienst | Verwendung | Lizenz/Bedingungen |
-|--------|-----------|-------------------|
-| [logo.dev](https://logo.dev) | Herstellerlogos der Fahrzeugkarten | Kostenloser Plan, eigener API-Key erforderlich |
+| Service | Usage | License/Terms |
+|---------|-------|---------------|
+| [logo.dev](https://logo.dev) | Manufacturer logos for vehicle cards | Free plan, own API key required |
 | [Material Design Icons](https://materialdesignicons.com) | Icons via Home Assistant | Apache 2.0 |
 | Home Assistant APIs | WebSocket, Config Flow, Storage | Apache 2.0 |
 
-### logo.dev API-Key
+### logo.dev API Key
 
-Die Integration verwendet logo.dev für automatische Herstellerlogos (Skoda, VW, BMW etc.).
-Der im Code enthaltene API-Key ist ein öffentlicher Demo-Key. Für den produktiven Einsatz
-empfehle ich einen **eigenen kostenlosen Account** unter [logo.dev](https://logo.dev) zu erstellen
-und den Key in der JS-Datei zu ersetzen:
+The integration uses logo.dev for automatic manufacturer logos (Skoda, VW, BMW, etc.).
+The API key included in the code is a public demo key. For production use,
+I recommend creating your own **free account** at [logo.dev](https://logo.dev)
+and replacing the key in the JS file:
 
 ```javascript
-// In vehicle-service-card.js, Zeile ~50:
+// In vehicle-service-card.js, around line 50:
 function logoUrl(d) {
-  return `https://img.logo.dev/${d}?token=DEIN_EIGENER_KEY&size=64&format=png`;
+  return `https://img.logo.dev/${d}?token=YOUR_OWN_KEY&size=64&format=png`;
 }
 ```
 
 ---
 
-## Lizenz
+## License
 
-MIT License – siehe [LICENSE](LICENSE)
+MIT License – see [LICENSE](LICENSE)
 
-> Diese Software wird ohne Gewähr bereitgestellt. Die Intervalwerte und Berechnungen sind 
-> Richtwerte ohne Garantie. Prüfe alle Angaben anhand des Servicehefts deines Fahrzeugs.
-> Keine Haftung für Schäden durch fehlerhafte Werte oder Interpretation der Daten.
+> This software is provided without warranty. The interval values and calculations are
+> guidelines without guarantee. Please verify all information against your vehicle's service manual.
+> No liability for damages caused by incorrect values or data interpretation.
 
-## Mitwirken / Issues
+## Contributing / Issues
 
-Fehler oder Verbesserungsvorschläge bitte als [GitHub Issue](https://github.com/toxictody1337/vehicle-service-manager/issues) melden.
+Please report bugs or suggestions as [GitHub Issues](https://github.com/toxictody1337/vehicle-service-manager/issues).
